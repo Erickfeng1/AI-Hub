@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>团队数据看板</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f7f7f5; color: #2c2c2a; padding: 32px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 500; }
+  .sub { color: #888780; font-size: 13px; margin: 6px 0 24px; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .card { background: #fff; border: 1px solid #e5e3dc; border-radius: 12px; padding: 16px; }
+  .card b { font-size: 24px; font-weight: 500; display: block; }
+  .card span { font-size: 12px; color: #5f5e5a; }
+  .panel { background: #fff; border: 1px solid #e5e3dc; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .panel h2 { font-size: 14px; font-weight: 500; margin-bottom: 14px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; }
+  .bar-row .label { width: 64px; color: #5f5e5a; text-align: right; }
+  .bar { height: 18px; border-radius: 5px; background: #185fa5; }
+  .bar.alt { background: #0f6e56; }
+  .bar-row .val { color: #888780; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #f0efe9; }
+  th { color: #888780; font-weight: 400; font-size: 12px; }
+  .tag { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: #e8f3ee; color: #0f6e56; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>团队数据看板</h1>
+  <p class="sub">由同事 VibeCoding 生成 · 通过企业 AI 中台 MCP 一键发布</p>
+  <div class="cards">
+    <div class="card"><b>128</b><span>本周新增项目</span></div>
+    <div class="card"><b>36</b><span>进行中投放</span></div>
+    <div class="card"><b>92%</b><span>按时交付率</span></div>
+    <div class="card"><b>4.8</b><span>客户满意度</span></div>
+  </div>
+  <div class="panel">
+    <h2>各渠道产出（近 6 周）</h2>
+    <div class="bar-row"><span class="label">抖音</span><div class="bar" style="width: 72%"></div><span class="val">72</span></div>
+    <div class="bar-row"><span class="label">小红书</span><div class="bar" style="width: 58%"></div><span class="val">58</span></div>
+    <div class="bar-row"><span class="label">B 站</span><div class="bar alt" style="width: 44%"></div><span class="val">44</span></div>
+    <div class="bar-row"><span class="label">视频号</span><div class="bar alt" style="width: 36%"></div><span class="val">36</span></div>
+    <div class="bar-row"><span class="label">公众号</span><div class="bar alt" style="width: 22%"></div><span class="val">22</span></div>
+  </div>
+  <div class="panel">
+    <h2>重点项目</h2>
+    <table>
+      <tr><th>项目</th><th>负责人</th><th>状态</th></tr>
+      <tr><td>Q3 品牌焕新投放</td><td>王芳</td><td><span class="tag">进行中</span></td></tr>
+      <tr><td>双十一达人矩阵</td><td>李雷</td><td><span class="tag">进行中</span></td></tr>
+      <tr><td>新品首发直播</td><td>韩梅</td><td><span class="tag">已交付</span></td></tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

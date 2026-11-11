@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="出海网站体检：输入域名，一键检测 SEO、技术问题、GEO/AI 可见性与性能，生成完整诊断报告" />
+    <title>出海网站体检 · 一键诊断</title>
+    <style>
+:root {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --ink: #1b2530;
+  --muted: #5c6673;
+  --line: #e0e4e8;
+  --red: #b3261e;
+  --red-bg: #fbeeed;
+  --orange: #c2410c;
+  --orange-bg: #fdf1e7;
+  --amber: #a16207;
+  --amber-bg: #fbf3df;
+  --green: #166534;
+  --green-bg: #e9f4ec;
+  --ink-num: #253241;
+  --accent: #0f5aa8;
+  --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 4px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+header.top {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 40px 0 34px;
+}
+.kicker { font-size: 13px; letter-spacing: 0.14em; color: var(--muted); margin: 0 0 6px; }
+h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.25; margin: 0 0 8px; letter-spacing: 0.01em; }
+.sub { color: var(--muted); font-size: 14.5px; margin: 0; }
+
+main { padding: 28px 0 8px; }
+section.card { margin: 0 0 20px; }
+h2 { font-size: 18px; margin: 0 0 12px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px clamp(16px, 3vw, 28px);
+}
+
+/* 表单 */
+.form-card label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.form-row input {
+  flex: 1 1 280px;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 15px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fbfbf9;
+  color: var(--ink);
+}
+.form-row input:focus { border-color: var(--accent); background: #fff; }
+button {
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+button:hover { opacity: 0.88; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.hint { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.error { font-size: 14px; color: var(--red); background: var(--red-bg); border: 1px solid #efc9c5; border-radius: var(--radius); padding: 8px 12px; margin: 10px 0 0; }
+
+/* 进度 */
+.pbar { background: var(--bg); border: 1px solid var(--line); border-radius: 99px; height: 10px; overflow: hidden; margin: 6px 0 14px; }
+.pfill { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+.stages { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.stages li { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.stages .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
+.stages li.running { color: var(--ink); }
+.stages li.running .dot { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.stages li.done { color: var(--green); }
+.stages li.done .dot { background: var(--green); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.detail { font-size: 13.5px; color: var(--muted); margin: 12px 0 0; font-family: var(--mono); }
+
+/* 结果 */
+.result-head { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.result-head h2 { margin: 0 0 2px; font-size: 20px; }
+.dim { color: var(--muted); font-size: 13px; margin: 0; }
+.btn {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.btn-primary { background: var(--ink); border-color: var(--ink); color: #fff; }
+.btn:hover { opacity: 0.88; }
+.score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 16px 0 8px; }
+.score { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; background: #fdfdfc; }
+.score .g { font-family: var(--mono); font-size: 30px; font-weight: 700; line-height: 1.1; }
+.score .gl { font-size: 13px; color: var(--ink); }
+.score .gs { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.g-f .g { color: var(--red); } .g-f { border-top: 3px solid var(--red); }
+.g-d .g { color: var(--orange); } .g-d { border-top: 3px solid var(--orange); }
+.g-c .g { color: var(--amber); } .g-c { border-top: 3px solid var(--amber); }
+.g-b .g { color: var(--green); } .g-b { border-top: 3px solid var(--green); }
+.g-a .g { color: var(--green); } .g-a { border-top: 3px solid var(--green); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 12px; }
+.stat { background: #fdfdfc; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 15px; }
+.stat .v { font-family: var(--mono); font-size: 21px; font-weight: 700; color: var(--ink-num); line-height: 1.2; }
+.stat .v.bad { color: var(--red); }
+.stat .k { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+/* 最近检测 */
+.recent-list { list-style: none; margin: 0; padding: 0; }
+.recent-list li { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.recent-list li:last-child { border-bottom: none; }
+.rhost { font-family: var(--mono); font-size: 13px; color: var(--ink-num); }
+.rstatus { color: var(--muted); font-size: 13px; }
+
+/* 能查出什么 */
+.about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.about-grid strong { font-size: 14.5px; display: block; margin-bottom: 2px; }
+.about-grid p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.ab-no { font-family: var(--mono); font-size: 12px; color: var(--muted); display: block; letter-spacing: 0.08em; }
+
+footer { border-top: 1px solid var(--line); margin-top: 24px; padding: 20px 0 40px; color: var(--muted); font-size: 13px; }
+footer p { margin: 0; }
+
+@media (max-width: 560px) {
+  .form-row button { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .stages li.running .dot, .pfill { animation: none; transition: none; }
+}
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header class="top">
+        <div class="wrap">
+          <p class="kicker">出海网站诊断 · WEBSITE AUDIT</p>
+          <h1>你的网站，海外买家和 AI 眼里什么样？</h1>
+          <p class="sub">输入域名，实测 SEO、技术问题、GEO/AI 可见性与性能，几分钟生成完整诊断报告。</p>
+        </div>
+      </header>
+
+      <main class="wrap">
+        <section class="card form-card" aria-label="开始检测">
+          <form id="audit-form">
+            <label for="url-input">网站地址</label>
+            <div class="form-row">
+              <input
+                id="url-input"
+                name="url"
+                type="text"
+                inputmode="url"
+                autocomplete="url"
+                placeholder="https://www.example.com"
+                value="https://www.senchuan.cn"
+                required
+              />
+              <button id="submit-btn" type="submit">开始体检</button>
+            </div>
+            <p class="hint" id="health-hint" aria-live="polite">正在检查运行环境…</p>
+            <p class="error" id="form-error" role="alert" hidden></p>
+          </form>
+        </section>
+
+        <section class="card progress-card" id="progress-card" aria-label="检测进度" hidden>
+          <h2 id="progress-title">检测中…</h2>
+          <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pbar">
+            <span class="pfill" id="pfill" style="width: 0%"></span>
+          </div>
+          <ul class="stages" id="stage-list"></ul>
+          <p class="detail" id="stage-detail" aria-live="polite"></p>
+        </section>
+
+        <section class="card result-card" id="result-card" aria-label="检测结果" hidden>
+          <div class="result-head">
+            <div>
+              <h2 id="result-host"></h2>
+              <p class="dim" id="result-meta"></p>
+            </div>
+            <a class="btn btn-primary" id="report-link" target="_blank" rel="noopener" hidden>查看完整报告 ↗</a>
+          </div>
+          <div class="score-grid" id="score-grid"></div>
+          <div class="stats" id="stats-grid"></div>
+        </section>
+
+        <section class="card recent-card" id="recent-card" aria-label="最近检测" hidden>
+          <h2>最近检测</h2>
+          <ul class="recent-list" id="recent-list"></ul>
+        </section>
+
+        <section class="card about-card">
+          <h2>能查出什么？</h2>
+          <div class="about-grid">
+            <div><span class="ab-no">01</span><strong>页面 SEO</strong><p>Title、描述、H1、图片 alt、买家词覆盖——逐页实测。</p></div>
+            <div><span class="ab-no">02</span><strong>技术问题</strong><p>软 404、robots/sitemap 真伪、canonical、安全响应头、收录采样抽查。</p></div>
+            <div><span class="ab-no">03</span><strong>GEO/AI 可见性</strong><p>AI 模拟海外买家提问，检测 AI 回答是否会提到你的品牌。</p></div>
+            <div><span class="ab-no">04</span><strong>性能</strong><p>Lighthouse 移动端实测：LCP、传输体积、资源构成。</p></div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div class="wrap">
+          <p>website-audit-web v0.4 · Lighthouse + 自研 SEO / 技术检查 + 收录核查 + GEO/AI 问答 + 复测对比 · 测试位置为本机直连</p>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+        var STAGES = [
+          ['crawl', '抓取页面'],
+          ['tech', '技术检查'],
+          ['siteIndex', '收录核查'],
+          ['geo', 'GEO/AI 问答'],
+          ['perf', '性能测试'],
+          ['report', '评分与报告'],
+        ];
+        var SCORE_LABELS = {
+          onPageSeo: '页面 SEO',
+          technicalSeo: '技术 SEO',
+          siteIndex: '收录',
+          structuredData: '结构化数据',
+          performance: '性能',
+          mobile: '移动适配',
+          multilingual: '多语言',
+          geo: 'GEO/AI',
+        };
+        var currentTaskId = null;
+        var pollTimer = null;
+
+        function $(id) {
+          return document.getElementById(id);
+        }
+        function esc(s) {
+          return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        }
+        function kbmb(b) {
+          if (b == null) return '—';
+          return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+        }
+        function fmtMs(ms) {
+          if (ms == null) return '—';
+          return ms >= 60000 ? (ms / 60000).toFixed(1) + ' min' : (ms / 1000).toFixed(1) + ' s';
+        }
+
+        function checkHealth() {
+          fetch('/api/health')
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (d) {
+              var hint = $('health-hint');
+              if (d && d.ok) {
+                hint.textContent = d.chrome
+                  ? '运行环境就绪：SEO + 技术 + GEO/AI 问答 + 性能测试全部可用。'
+                  : '运行环境就绪：将执行 SEO / 技术 / GEO/AI 问答检查（性能测试暂不可用，报告会标注）。';
+              } else {
+                hint.textContent = '服务异常，请稍后重试。';
+              }
+            })
+            .catch(function () {
+              $('health-hint').textContent = '无法连接检测服务。';
+            });
+        }
+
+        function loadRecent() {
+          fetch('/api/tasks')
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (d) {
+              var list = (d && d.tasks) || [];
+              var card = $('recent-card');
+              if (!list.length) {
+                card.hidden = true;
+                return;
+              }
+              card.hidden = false;
+              $('recent-list').innerHTML = list
+                .map(function (t) {
+                  var statusTxt =
+                    t.status === 'done' ? '完成' : t.status === 'error' ? '失败' : t.status === 'running' ? '进行中' : '排队中';
+                  var link =
+                    t.status === 'done' && t.reportUrl
+                      ? ' · <a href="' + esc(t.reportUrl) + '" target="_blank" rel="noopener">报告</a>'
+                      : '';
+                  return (
+                    '<li><span class="rhost">' + esc(t.host) + '</span><span class="rstatus">' + statusTxt + '</span>' + link + '</li>'
+                  );
+                })
+                .join('');
+            })
+            .catch(function () {});
+        }
+
+        function renderStages(stages) {
+          var ul = $('stage-list');
+          var maxPct = 0;
+          var seen = {};
+          (stages || []).forEach(function (s) {
+            seen[s.stage] = Math.max(seen[s.stage] || 0, s.pct || 0);
+            maxPct = Math.max(maxPct, s.pct || 0);
+          });
+          ul.innerHTML = STAGES.map(function (pair) {
+            var name = pair[0];
+            var label = pair[1];
+            var cls = 'pending';
+            if (seen[name] != null) {
+              var startedNext = STAGES.some(function (p2) {
+                return p2[0] !== name && seen[p2[0]] != null && STAGES.findIndex(function (x) { return x[0] === p2[0]; }) > STAGES.findIndex(function (x) { return x[0] === name; });
+              });
+              cls = seen[name] >= 100 || startedNext ? 'done' : 'running';
+            }
+            return '<li class="' + cls + '"><span class="dot"></span>' + label + '</li>';
+          }).join('');
+          $('pfill').style.width = maxPct + '%';
+          $('pbar').setAttribute('aria-valuenow', String(maxPct));
+          var last = (stages && stages.length && stages[stages.length - 1]) || null;
+          $('stage-detail').textContent = last ? last.detail || '' : '';
+        }
+
+        function renderResult(r) {
+          $('result-card').hidden = false;
+          $('result-host').textContent = r.host + ' 体检结果';
+          var d = new Date(r.testedAt);
+          $('result-meta').textContent =
+            '检测于 ' +
+            d.getFullYear() +
+            '-' +
+            String(d.getMonth() + 1).padStart(2, '0') +
+            '-' +
+            String(d.getDate()).padStart(2, '0') +
+            ' ' +
+            String(d.getHours()).padStart(2, '0') +
+            ':' +
+            String(d.getMinutes()).padStart(2, '0') +
+            ' · 共检测 ' +
+            r.pageCount +
+            ' 个页面';
+          var cmp = r.comparison;
+          if (cmp && cmp.previousTestedAt) {
+            var pd = new Date(cmp.previousTestedAt);
+            $('result-meta').textContent +=
+              ' · 对比上次 ' +
+              pd.getFullYear() + '-' + String(pd.getMonth() + 1).padStart(2, '0') + '-' + String(pd.getDate()).padStart(2, '0') +
+              ' 的检测（明细见报告「复测对比」章节）';
+          } else {
+            $('result-meta').textContent += ' · 首次检测，复测将自动生成对比';
+          }
+          $('report-link').href = r.reportUrl;
+          $('report-link').hidden = false;
+          try {
+            localStorage.setItem('audit_last_' + r.host, JSON.stringify({
+              testedAt: r.testedAt,
+              scores: r.scores,
+              keyNumbers: r.keyNumbers,
+              pages: r.pages || [],
+            }));
+          } catch (e) { /* 存储不可用时仅影响下次对比 */ }
+
+          var grades = { A: 'g-a', B: 'g-b', C: 'g-c', D: 'g-d', F: 'g-f' };
+          var cmpScores = (r.comparison && r.comparison.scores) || {};
+          $('score-grid').innerHTML = Object.keys(SCORE_LABELS)
+            .map(function (k) {
+              var v = (r.scores || {})[k] || {};
+              var d = cmpScores[k];
+              var delta = '';
+              if (d && d.delta != null && d.delta !== 0) {
+                delta =
+                  ' <b style="color:' +
+                  (d.delta > 0 ? '#166534' : '#b3261e') +
+                  '">' +
+                  (d.delta > 0 ? '↑+' : '↓') +
+                  d.delta +
+                  '</b>';
+              }
+              return (
+                '<div class="score ' +
+                (grades[v.grade] || '') +
+                '"><span class="g">' +
+                esc(v.grade || '—') +
+                '</span><span class="gl">' +
+                SCORE_LABELS[k] +
+                '</span><span class="gs">' +
+                (v.score != null ? v.score + ' 分' + delta : '未测') +
+                '</span></div>'
+              );
+            })
+            .join('');
+
+          var key = r.keyNumbers || {};
+          var aiHits = key.aiMentionHits || '';
+          var stats = [
+            [kbmb(key.homepageTransferBytes), '首页传输量（健康 2–3 MB）', key.homepageTransferBytes > 3145728],
+            [fmtMs(key.lcpHomepageMobileS), '首页 LCP · 模拟 4G（目标 < 2.5s）', key.lcpHomepageMobileS > 2500],
+            [key.imagesNoAltPct != null ? key.imagesNoAltPct + '%' : '—', '首页图片无 alt 文本', (key.imagesNoAltPct || 0) > 20],
+            [String(key.buyerWordHits) + ' 项命中', '买家关键词（hotel / MOQ 等）', key.buyerWordHits === 0],
+            [aiHits || '—', 'AI 问答品牌命中（模拟买家提问）', aiHits.indexOf('0/') === 0],
+          ];
+          $('stats-grid').innerHTML = stats
+            .map(function (s) {
+              return '<div class="stat"><span class="v' + (s[2] ? ' bad' : '') + '">' + esc(s[0]) + '</span><span class="k">' + s[1] + '</span></div>';
+            })
+            .join('');
+        }
+
+        function poll() {
+          if (!currentTaskId) return;
+          fetch('/api/task/' + currentTaskId)
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (t) {
+              if (t.status === 'done') {
+                stopPoll();
+                $('progress-card').hidden = true;
+                renderResult(t.result);
+                loadRecent();
+                resetForm();
+              } else if (t.status === 'error') {
+                stopPoll();
+                $('progress-card').hidden = true;
+                showFormError('检测失败：' + (t.error || '未知原因'));
+                resetForm();
+              } else {
+                renderStages(t.stages);
+                pollTimer = setTimeout(poll, 1500);
+              }
+            })
+            .catch(function () {
+              pollTimer = setTimeout(poll, 2500);
+            });
+        }
+
+        function stopPoll() {
+          if (pollTimer) {
+            clearTimeout(pollTimer);
+            pollTimer = null;
+          }
+        }
+        function resetForm() {
+          $('submit-btn').disabled = false;
+          $('submit-btn').textContent = '开始体检';
+        }
+        function showFormError(msg) {
+          var el = $('form-error');
+          el.textContent = msg;
+          el.hidden = false;
+        }
+
+        $('audit-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var btn = $('submit-btn');
+          var errEl = $('form-error');
+          errEl.hidden = true;
+          btn.disabled = true;
+          btn.textContent = '提交中…';
+          var url = $('url-input').value.trim();
+          if (!url) {
+            showFormError('请输入网站地址');
+            resetForm();
+            return;
+          }
+          var reqUrl = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+          var prevPayload = null;
+          try {
+            var h = new URL(reqUrl).hostname;
+            var rawPrev = localStorage.getItem('audit_last_' + h);
+            if (rawPrev) prevPayload = JSON.parse(rawPrev);
+          } catch (e) { prevPayload = null; }
+          fetch('/api/audit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url, previous: prevPayload }),
+          })
+            .then(function (r) {
+              return r.json().then(function (d) {
+                return { ok: r.ok, d: d };
+              });
+            })
+            .then(function (res) {
+              if (!res.ok || res.d.error) {
+                showFormError(res.d.error || '提交失败');
+                resetForm();
+                return;
+              }
+              currentTaskId = res.d.taskId;
+              $('result-card').hidden = true;
+              $('progress-card').hidden = false;
+              $('progress-title').textContent = '正在体检 ' + res.d.host + ' …';
+              renderStages([]);
+              poll();
+            })
+            .catch(function () {
+              showFormError('网络错误，请重试');
+              resetForm();
+            });
+        });
+
+        checkHealth();
+        loadRecent();
+      })();
+    </script>
+  </body>
+</html>

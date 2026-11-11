@@ -1,0 +1,37 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - hub-net
+
+  hub:
+    build: .
+    environment:
+      - HUB_PORT=8080
+      - HUB_DOMAIN=corp.net
+      - HUB_EXECUTOR=docker
+    volumes:
+      - hub-data:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hub.rule=Host(`hub.corp.net`)"
+      - "traefik.http.services.hub.loadbalancer.server.port=8080"
+    networks:
+      - hub-net
+
+networks:
+  hub-net:
+    driver: bridge
+
+volumes:
+  hub-data:

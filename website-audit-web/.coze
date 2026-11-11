@@ -1,0 +1,18 @@
+[project]
+entrypoint = "index.html"
+requires = [ "nodejs-22" ]
+project_type = "web"
+project_name = "website-audit-web"
+project_id = "7702018788245635135"
+app_id = "7702089788811313215"
+template = "native-static"
+version = "0.1.9"
+appliedPatches = [ ]
+
+[dev]
+build = [ "bash", "./scripts/prepare.sh" ]
+run = [ "bash", "./scripts/dev.sh" ]
+
+[deploy]
+build = [ "bash", "./scripts/prepare.sh" ]
+run = [ "bash", "./scripts/dev.sh" ]

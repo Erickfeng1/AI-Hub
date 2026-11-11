@@ -1,0 +1,18 @@
+{
+  "name": "website-audit-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "出海网站诊断 · Web 控制台（输入域名，一键体检）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "coze-coding-dev-sdk": "^0.7.32",
+    "lighthouse": "^13.6.0"
+  }
+}

@@ -1,0 +1,34 @@
+# 由 deploy.sh 生成于 2026-10-20 16:47:52 —— 门户路由
+#
+# 为什么需要这份文件：应用的子域名路由是「发布时自动生成」的（docker provider
+# 感知 label），但门户本身是长驻进程、不带 Traefik label，网关看不见它 ——
+# 不配这条，上线后访问主域名会直接 404。
+http:
+  routers:
+    hub-portal:
+      rule: Host(`unilink.icu`)
+      entryPoints: [web, websecure]
+      service: hub-portal
+      priority: 100
+      middlewares: [hub-headers, hub-to-https]
+      tls:
+        certResolver: le
+
+  services:
+    hub-portal:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8099"
+
+  middlewares:
+    hub-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    hub-headers:
+      headers:
+        referrerPolicy: "strict-origin-when-cross-origin"
+        frameDeny: true
+        customResponseHeaders:
+          X-Content-Type-Options: ["nosniff"]
+          Strict-Transport-Security: ["max-age=31536000; includeSubDomains"]

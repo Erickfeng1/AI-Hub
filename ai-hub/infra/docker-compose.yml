@@ -1,0 +1,59 @@
+# 企业 AI 中台 · 生产编排（Traefik 网关 + 应用容器网络）
+#
+# 两种部署形态：
+#   A. 默认（只起 Traefik）：中台跑在宿主机（cd ai-hub && HUB_EXECUTOR=docker npm run hub），
+#      应用容器由中台代管。适合单服务器快速上线。
+#   B. 全容器化（--profile full）：中台本身也进容器，适合交付/迁移。
+#      注意：hub 服务挂载了 docker.sock，等价于宿主 root，仅在内网可信环境使用。
+#
+# 本地验证：cp .env.example .env && docker compose up -d，然后访问 http://localhost:8080
+
+name: ai-hub
+
+services:
+  traefik:
+    image: traefik:v3.6
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    # 对外端口可配：宿主上已有 nginx/Apache 占着 80/443 时，用 --gateway-port 8000
+    # 把网关挪到高端口，再由前置 nginx 反代进来（Traefik 容器内始终监听 80/443）。
+    ports:
+      - "${HUB_GATEWAY_PORT:-8000}:80"
+      - "${HUB_GATEWAY_TLS_PORT:-8443}:443"
+    extra_hosts:
+      # 让 Traefik 容器能回访宿主机上的中台（形态 A 的 forwardAuth 与门户路由都需要）
+      - "host.docker.internal:host-gateway"
+    environment:
+      # traefik.yml 的 certificatesResolvers.le.acme.email 用 ${ACME_EMAIL} 占位，
+      # 必须显式传进容器，否则 ACME 解析器拿不到邮箱而无法签发证书
+      - ACME_EMAIL=${ACME_EMAIL:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - traefik-acme:/acme
+    networks: [hub-net]
+
+  hub:
+    profiles: ["full"]
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - HUB_EXECUTOR=docker
+    volumes:
+      - hub-data:/app/data
+      # 中台代管 docker build/run（形态 B 必需；安全说明见部署指南）
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on: [traefik]
+    networks: [hub-net]
+
+volumes:
+  traefik-acme:
+  hub-data:
+
+networks:
+  hub-net:
+    name: hub-net

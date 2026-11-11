@@ -1,0 +1,35 @@
+# Traefik 静态配置（v3）
+# 安全默认：providers.docker.exposedByDefault=false —— 只有显式带 traefik.enable=true
+# 标签的容器（即中台发布的应用）才会被路由，同网络里的其他容器不会意外暴露。
+
+api:
+  dashboard: true
+  # 仪表盘仅监听容器内 8080，未发布到宿主；本地可用 docker 网络访问，生产建议关闭
+
+entryPoints:
+  web:
+    address: :80
+  websecure:
+    address: :443
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: hub-net
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+# 访问日志留痕（与中台审计日志互补：网关层记录每个应用子域名的访问）
+accessLog: {}
+
+# Let's Encrypt 证书解析器。
+# 使用方式：infra/.env 填 ACME_EMAIL，并设 HUB_TLS_CERT_RESOLVER=le，
+# 中台发布应用时会自动给容器打 tls.certresolver=le 标签（80 跳 443 一并生效）。
+# 不设置时应用仅走 HTTP，适合本地开发。邮箱为空且无应用引用该解析器，不影响启动。
+certificatesResolvers:
+  le:
+    acme:
+      email: ${ACME_EMAIL}
+      storage: /acme/acme.json
+      tlsChallenge: {}

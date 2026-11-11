@@ -1,0 +1,41 @@
+# 中台门户路由（file provider 手工配置）
+#
+# 为什么需要：应用的子域名路由是「发布时自动生成」的（docker provider 感知 label），
+# 但门户本身是长驻进程、不带 Traefik label，网关看不见它 —— 不配这条，
+# 部署上线后 https://hub.你的域名 会直接 404。
+#
+# 使用：把本文件复制为 hub.yml，把 hub.example.com 全部替换成你的域名，然后
+#   1) infra/.env 里设置 HUB_DOMAIN=<你的域名>
+#   2) HUB_INTERNAL_URL 保持形态 A 的 http://host.docker.internal:8080（网关回访中台）
+#   3) 已配 ACME_EMAIL 时 Traefik 自动为该域名签发证书
+# 文件 provider 会 watch 目录，改完无需重启网关（几秒内生效）。
+
+http:
+  routers:
+    # 门户 + MCP HTTP 端点（/mcp、/__hub__/* 都在同一个中台进程上）
+    hub-portal:
+      rule: Host(`hub.example.com`)
+      entryPoints: [web, websecure]
+      service: hub-portal
+      priority: 100
+      middlewares: [hub-headers]
+      tls:
+        certResolver: le
+
+  services:
+    hub-portal:
+      # 形态 A：中台跑在宿主机 8080（compose 只起 Traefik）→ 用 host.docker.internal 回访
+      # 形态 B：改成本机 compose 网络内的服务名 http://hub:8080
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8080"
+
+  middlewares:
+    hub-headers:
+      headers:
+        # 应用 iframe/跳转场景需要正确的 referrer 策略；其余交给应用自身
+        referrerPolicy: "strict-origin-when-cross-origin"
+        frameDeny: true
+        customResponseHeaders:
+          X-Content-Type-Options: ["nosniff"]
+          Strict-Transport-Security: ["max-age=31536000; includeSubDomains"]
